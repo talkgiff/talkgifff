@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Interativo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Centralizar imagens */
+        .imagem-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        img {
+            width: 80%;
+            max-width: 500px;
+            margin: 10px;
+        }
+        .botao-container {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .botao {
+            background-color: red;
+            color: white;
+            font-size: 18px; /* Botões menores */
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px #999;
+            transition: all 0.3s ease;
+        }
+        .botao:active {
+            box-shadow: 0 2px #666;
+            transform: translateY(4px);
+        }
+        .botao.piscando-verde {
+            background-color: green;
+            animation: piscarVerde 1s infinite;
+        }
+        .botao.piscando-vermelho {
+            background-color: red;
+            animation: piscarVermelho 1s infinite;
+        }
+        .mensagem {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+            display: none;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f0f0f0;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transform: perspective(500px) rotateX(10deg);
+        }
+        .mensagem.correta {
+            color: green;
+            background-color: #e1ffe1;
+        }
+        .mensagem.errada {
+            color: red;
+            background-color: #ffe1e1;
+        }
+        /* Efeito de moedas subindo no centro da tela e grande */
+        .moeda {
+            position: absolute;
+            font-size: 100px; /* Tamanho maior da moeda */
+            color: gold;
+            animation: subirMoeda 2s ease-out;
+        }
+
+        @keyframes subirMoeda {
+            0% {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -200px); /* Moeda sobe mais alto */
+                opacity: 0;
+            }
+        }
+
+        /* Efeito de várias moedas subindo de forma coordenada */
+        .moeda.multipla {
+            animation: subirMoeda 5s ease-out;
+        }
+
+        /* Estilo para a placa 3D da mensagem de sucesso */
+        .mensagem.correta {
+            transform: perspective(500px) rotateX(10deg) translateZ(40px);
+            background-color: #c8e6c9;
+            color: #388e3c;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Primeira Imagem -->
+    <div class="imagem-container">
+        <img id="imagem-quiz" src="https://imgur.com/LpkjrXF.png" alt="Imagem do Sinal">
+    </div>
+
+    <div class="botao-container">
+        <button id="btn1" class="botao" onclick="verificarResposta(1)">1</button>
+        <button id="btn2" class="botao" onclick="verificarResposta(2)">2</button>
+        <button id="btn3" class="botao" onclick="verificarResposta(3)">3</button>
+        <button id="btn4" class="botao" onclick="verificarResposta(4)">4</button>
+    </div>
+
+    <div id="mensagem" class="mensagem"></div>
+
+    <script>
+        let moedas = 0;
+        let respostaCertaPrimeiraFase = false;
+
+        // Função para verificar a resposta do quiz
+        function verificarResposta(opcao) {
+            const mensagem = document.getElementById('mensagem');
+            const btn1 = document.getElementById('btn1');
+            const btn2 = document.getElementById('btn2');
+            const btn3 = document.getElementById('btn3');
+            const btn4 = document.getElementById('btn4');
+            const imagemQuiz = document.getElementById('imagem-quiz');
+
+            // Resetar todos os botões
+            btn1.classList.remove('piscando-vermelho', 'piscando-verde');
+            btn2.classList.remove('piscando-vermelho', 'piscando-verde');
+            btn3.classList.remove('piscando-vermelho', 'piscando-verde');
+            btn4.classList.remove('piscando-vermelho', 'piscando-verde');
+
+            // Verificar a resposta da primeira fase
+            if (opcao === 3 && !respostaCertaPrimeiraFase) {
+                // Resposta correta
+                respostaCertaPrimeiraFase = true;
+                btn3.classList.add('piscando-verde');
+                mensagem.textContent = "Parabéns, você acertou!";
+                mensagem.classList.remove('errada');
+                mensagem.classList.add('correta');
+                imagemQuiz.src = 'https://imgur.com/ahd1Fmp.png'; // Troca a imagem
+
+                // Exibe o efeito das moedas subindo
+                exibirMoedasSubindo();
+
+                // Exibe a mensagem de acerto
+                mensagem.style.display = 'block';
+
+                // Adiciona os novos botões após 1 segundo
+                setTimeout(function() {
+                    adicionarBotoesSecundaFase();
+                }, 1000);
+            } else if (!respostaCertaPrimeiraFase) {
+                // Resposta errada
+                if (opcao === 1) btn1.classList.add('piscando-vermelho');
+                if (opcao === 2) btn2.classList.add('piscando-vermelho');
+                if (opcao === 4) btn4.classList.add('piscando-vermelho');
+
+                mensagem.textContent = "Que pena, você errou!";
+                mensagem.classList.remove('correta');
+                mensagem.classList.add('errada');
+                mensagem.style.display = 'block';
+            }
+        }
+
+        // Exibe o efeito das moedas subindo
+        function exibirMoedasSubindo() {
+            const numeroMoedas = 10; // Número de moedas a aparecer
+            for (let i = 0; i < numeroMoedas; i++) {
+                const moeda = document.createElement('div');
+                moeda.classList.add('moeda', 'multipla');
+                moeda.textContent = '💰';
+                moeda.style.left = `${50 + (Math.random() * 20)}%`; // Posição horizontal ajustada
+                moeda.style.top = '60%'; // Posição de início
+
+                document.body.appendChild(moeda);
+
+                // Remove a moeda após 5 segundos
+                setTimeout(function() {
+                    moeda.remove();
+                }, 5000);
+            }
+        }
+
+        // Adiciona os botões para a segunda fase
+        function adicionarBotoesSecundaFase() {
+            const btnContainer = document.querySelector('.botao-container');
+            btnContainer.innerHTML = `
+                <button id="btn1" class="botao" onclick="verificarResposta2(1)">1</button>
+                <button id="btn2" class="botao" onclick="verificarResposta2(2)">2</button>
+                <button id="btn3" class="botao" onclick="verificarResposta2(3)">3</button>
+                <button id="btn4" class="botao" onclick="verificarResposta2(4)">4</button>
+            `;
+        }
+
+        // Função para verificar a resposta da segunda fase
+        function verificarResposta2(opcao) {
+            const mensagem = document.getElementById('mensagem');
+            const btn1 = document.getElementById('btn1');
+            const btn2 = document.getElementById('btn2');
+            const btn3 = document.getElementById('btn3');
+            const btn4 = document.getElementById('btn4');
+
+            // Resetar todos os botões
+            btn1.classList.remove('piscando-vermelho', 'piscando-verde');
+            btn2.classList.remove('piscando-vermelho', 'piscando-verde');
+            btn3.classList.remove('piscando-vermelho', 'piscando-verde');
+            btn4.classList.remove('piscando-vermelho', 'piscando-verde');
+
+            if (opcao === 1) {
+                btn1.classList.add('piscando-verde');
+                mensagem.textContent = "Parabéns, você acertou!";
+                mensagem.classList.remove('errada');
+                mensagem.classList.add('correta');
+                mensagem.style.display = 'block';
+            } else {
+                if (opcao === 2) btn2.classList.add('piscando-vermelho');
+                if (opcao === 3) btn3.classList.add('piscando-vermelho');
+                if (opcao === 4) btn4.classList.add('piscando-vermelho');
+
+                mensagem.textContent = "Que pena, você errou!";
+                mensagem.classList.remove('correta');
+                mensagem.classList.add('errada');
+                mensagem.style.display = 'block';
+            }
+        }
+    </script>
+
+</body>
+</html>
